@@ -19,17 +19,24 @@ def move(p1, p2):
     global character
     global x, y
 
+    events = get_events()
+    for event in events:
+        if event.type == SDL_MOUSEMOTION:
+            M_x, M_y = event.x, KPU_HEIGHT - 1 - event.y
+
     for i in range(0, 100 + 1):
         clear_canvas()
         kpu_ground.draw(KPU_WIDTH // 2, KPU_HEIGHT // 2)
-        cursor.draw(M_x, M_y)
         t = i / 100
         x = (1 - t) * p1[0] + t * p2[0]
         y = (1 - t) * p1[1] + t * p2[1]
+
         if dir == 1:
             character.clip_draw(frame * 100, 100 * 1, 100, 100, x, y)
         elif dir == -1:
             character.clip_draw(frame * 100, 0, 100, 100, x, y)
+
+        cursor.draw(M_x, M_y)
         update_canvas()
 
     character.clip_draw(frame * 100, 100 * 1, 100, 100, p2[0], p2[1])
