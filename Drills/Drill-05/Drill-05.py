@@ -3,19 +3,40 @@ from pico2d import *
 KPU_WIDTH, KPU_HEIGHT = 1280, 1024
 
 
-def draw_line(p1, p2):
+def move(p1, p2):
     # fill here
+    print((p1[0],p1[1]),(p2[0],p2[1]))
+    global M_x, M_y
+    global dir, stop_dir
+
+    if p1[0] < p2[0]:
+        dir = 1
+        stop_dir = 3
+    elif p1[0] > p2[0]:
+        dir = -1
+        stop_dir = 2
+
     global character
     global x, y
-    for i in range(0, 100 + 1, 2):
+
+    for i in range(0, 100 + 1):
+        clear_canvas()
+        kpu_ground.draw(KPU_WIDTH // 2, KPU_HEIGHT // 2)
+        cursor.draw(M_x, M_y)
         t = i / 100
         x = (1 - t) * p1[0] + t * p2[0]
         y = (1 - t) * p1[1] + t * p2[1]
-        character.clip_draw(frame * 100, 100 * 1, 100, 100, x, y)
-        # draw_point((x, y))
-    # draw_point(p2)
+        if dir == 1:
+            character.clip_draw(frame * 100, 100 * 1, 100, 100, x, y)
+        elif dir == -1:
+            character.clip_draw(frame * 100, 0, 100, 100, x, y)
+        update_canvas()
+
     character.clip_draw(frame * 100, 100 * 1, 100, 100, p2[0], p2[1])
-    pass
+    if dir == 1:
+        dir -= 1
+    elif dir == -1:
+        dir += 1
 
 
 def handle_events():
@@ -32,8 +53,7 @@ def handle_events():
             M_x, M_y = event.x, KPU_HEIGHT - 1 - event.y
 
         elif event.type == SDL_MOUSEBUTTONDOWN and event.button == SDL_BUTTON_LEFT:
-            print((x, y), (event.x, KPU_HEIGHT - 1 - event.y))
-            draw_line((x, y), (event.x, KPU_HEIGHT - 1 - event.y))
+            move((x, y), (event.x - 25, (KPU_HEIGHT - 1 - event.y) + 25))
         elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
             running = False
     pass
@@ -42,18 +62,25 @@ def handle_events():
 # fill here
 open_canvas(KPU_WIDTH, KPU_HEIGHT)
 hide_cursor()
+
 kpu_ground = load_image('KPU_GROUND.png')
 character = load_image('animation_sheet.png')
 cursor = load_image('hand_arrow.png')
+
 running = True
 x, y = KPU_WIDTH // 2, KPU_HEIGHT // 2
 M_x, M_y = x, y
+dir = 0
+stop_dir = 3
 frame = 0
 
 while running:
     clear_canvas()
     kpu_ground.draw(KPU_WIDTH // 2, KPU_HEIGHT // 2)
-    character.clip_draw(frame * 100, 100 * 1, 100, 100, x, y)
+    if stop_dir == 2:
+        character.clip_draw(frame * 100, 100 * 2, 100, 100, x, y)
+    elif stop_dir == 3:
+        character.clip_draw(frame * 100, 100 * 3, 100, 100, x, y)
     cursor.draw(M_x, M_y)
     update_canvas()
     frame = (frame + 1) % 8
