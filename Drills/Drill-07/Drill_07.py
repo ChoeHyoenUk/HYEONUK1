@@ -48,8 +48,12 @@ class Ball:
     def update(self):
         self.y -= self.v
 
-        if self.y < 40:
-            self.v = 0
+        if self.size == 1:
+            if self.y < 80:
+                self.v = 0
+        else:
+            if self.y < 70:
+                self.v = 0
 
     def draw(self):
         self.image.draw(self.x, self.y)
