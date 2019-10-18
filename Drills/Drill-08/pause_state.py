@@ -1,14 +1,34 @@
 import game_framework
 from pico2d import *
 import main_state
+import threading
 
 name = "PauseState"
 image = None
+draw_pause_image = True
+IsTimerRun = False
+
+
+def draw_timer():
+    global draw_pause_image
+    global image
+    timer = threading.Timer(0.5, draw_timer)
+
+    if draw_pause_image:
+        draw_pause_image = False
+    else:
+        draw_pause_image = True
+    timer.start()
+    pass
 
 
 def enter():
     global image
+    global IsTimerRun
     image = load_image('pause.png')
+    if not IsTimerRun:
+        IsTimerRun = True
+        draw_timer()
 
 
 def exit():
@@ -22,8 +42,15 @@ def update():
 
 def draw():
     global image
+    global draw_pause_image
+
     clear_canvas()
-    image.draw(400, 300)
+    main_state.grass.draw()
+    main_state.boy.draw()
+
+    if draw_pause_image:
+        image.draw(400, 300, 300, 300)
+
     update_canvas()
 
 
