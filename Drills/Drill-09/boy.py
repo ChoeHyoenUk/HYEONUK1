@@ -14,20 +14,15 @@ key_event_table = {
     (SDL_KEYUP, SDLK_LSHIFT): LSHIFT_UP
 }
 
+Push_Shift = 0
+
 
 # Boy States
 
 class IdleState:
     @staticmethod
     def enter(boy, event):
-        if event == RIGHT_DOWN:
-            boy.velocity += 1
-        elif event == LEFT_DOWN:
-            boy.velocity -= 1
-        elif event == RIGHT_UP:
-            boy.velocity -= 1
-        elif event == LEFT_UP:
-            boy.velocity += 1
+        boy.velocity = 0
 
     @staticmethod
     def exit(boy, event):
@@ -70,7 +65,7 @@ class RunState:
 
     @staticmethod
     def draw(boy):
-        if boy.velocity == 1:
+        if boy.velocity > 0:
             boy.image.clip_draw(boy.frame * 100, 100, 100, 100, boy.x, boy.y)
         else:
             boy.image.clip_draw(boy.frame * 100, 0, 100, 100, boy.x, boy.y)
@@ -79,12 +74,15 @@ class RunState:
 class DashState:
     @staticmethod
     def enter(boy, event):
-        if event == RSHIFT_DOWN or event == LSHIFT_DOWN:
-            if boy.velocity > 0:
-                boy.velocity += 3
-            else:
-                boy.velocity -= 3
-        boy.timer = 100
+        global Push_Shift
+
+        if Push_Shift == 1:
+            if event == RSHIFT_DOWN or event == LSHIFT_DOWN:
+                if boy.velocity > 0:
+                    boy.velocity += 2
+                else:
+                    boy.velocity -= 2
+            boy.timer = 150
 
     @staticmethod
     def exit(boy, event):
@@ -98,8 +96,6 @@ class DashState:
                 boy.velocity = 1
             else:
                 boy.velocity = -1
-
-
 
     @staticmethod
     def do(boy):
@@ -123,10 +119,12 @@ next_state_table = {
                 RIGHT_DOWN: RunState, LEFT_DOWN: RunState,
                 RSHIFT_UP: IdleState, LSHIFT_UP: IdleState,
                 RSHIFT_DOWN: IdleState, LSHIFT_DOWN: IdleState},
+
     RunState: {RIGHT_UP: IdleState, LEFT_UP: IdleState,
                RIGHT_DOWN: IdleState, LEFT_DOWN: IdleState,
                RSHIFT_UP: RunState, LSHIFT_UP: RunState,
                RSHIFT_DOWN: DashState, LSHIFT_DOWN: DashState},
+
     DashState: {RSHIFT_UP: RunState, LSHIFT_UP: RunState, TIMER_OUT: RunState,
                 RSHIFT_DOWN: DashState, LSHIFT_DOWN: DashState,
                 RIGHT_UP: IdleState, LEFT_UP: IdleState,
@@ -177,6 +175,11 @@ class Boy:
 
     def handle_event(self, event):
         # fill here
+        global Push_Shift
         if (event.type, event.key) in key_event_table:
             key_event = key_event_table[(event.type, event.key)]
+            if key_event == RSHIFT_DOWN or key_event == LSHIFT_DOWN:
+                Push_Shift += 1
+            elif key_event == RSHIFT_UP or key_event == LSHIFT_UP:
+                Push_Shift -= 1
             self.add_event(key_event)
