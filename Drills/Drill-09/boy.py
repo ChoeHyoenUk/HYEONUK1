@@ -84,18 +84,17 @@ class DashState:
     def enter(boy, event):
         if event == RSHIFT_DOWN or event == LSHIFT_DOWN:
             if boy.velocity > 0:
-                boy.velocity += 2
+                boy.velocity += 3
             else:
-                boy.velocity -= 2
-        elif event == RSHIFT_UP or event == LSHIFT_UP:
-            if boy.velocity > 0:
-                boy.velocity -= 2
-            else:
-                boy.velocity += 2
+                boy.velocity -= 3
 
     @staticmethod
     def exit(boy, event):
-        pass
+        if event == RSHIFT_UP or event == LSHIFT_UP:
+            if boy.velocity > 0:
+                boy.velocity -= 3
+            else:
+                boy.velocity += 3
 
     @staticmethod
     def do(boy):
