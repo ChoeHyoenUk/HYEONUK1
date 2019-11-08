@@ -5,7 +5,7 @@ import game_world
 
 # fill expressions correctly
 PIXEL_PER_METER = (10.0 / 0.3)
-RUN_SPEED_KMPH = 5.0
+RUN_SPEED_KMPH = 30.0
 RUN_SPEED_MPM = (RUN_SPEED_KMPH * 1000.0 / 60.0)
 RUN_SPEED_MPS = (RUN_SPEED_MPM/60.0)
 RUN_SPEED_PPS = (RUN_SPEED_MPS * PIXEL_PER_METER)
@@ -36,15 +36,15 @@ class FlyState:
         # fill here
         bird.x += bird.velocity * bird.fly_dir * game_framework.frame_time
 
-        if 92 > bird.x or 1600-92 < bird.x:
+        if 91 > bird.x or (1600-140) < bird.x:
             bird.fly_dir *= -1
 
     @staticmethod
     def draw(bird):
         if bird.fly_dir == 1:
-            bird.image.clip_draw(int(bird.frame) * 184, 338, 183, 169, bird.x, bird.y)
+            bird.image.clip_draw(int(bird.frame) * 182, 338, 183, 169, bird.x, bird.y)
         else:
-            bird.image. clip_composite_draw(int(bird.frame) * 184, 338, 183, 169, 0, 'h', bird.x, bird.y, 183, 169)
+            bird.image. clip_composite_draw(int(bird.frame) * 182, 338, 183, 169, 0, 'h', bird.x, bird.y, 183, 169)
 
 
 class Bird:
