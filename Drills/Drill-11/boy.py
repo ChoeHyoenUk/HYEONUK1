@@ -40,13 +40,13 @@ class IdleState:
     @staticmethod
     def enter(boy, event):
         if event == RIGHT_DOWN:
-            boy.velocity += RUN_SPEED_PPS
+            boy.velocity = 0
         elif event == LEFT_DOWN:
-            boy.velocity -= RUN_SPEED_PPS
+            boy.velocity = 0
         elif event == RIGHT_UP:
-            boy.velocity -= RUN_SPEED_PPS
+            boy.velocity = 0
         elif event == LEFT_UP:
-            boy.velocity += RUN_SPEED_PPS
+            boy.velocity = 0
         boy.timer = 1000
 
     @staticmethod
@@ -75,13 +75,13 @@ class RunState:
     @staticmethod
     def enter(boy, event):
         if event == RIGHT_DOWN:
-            boy.velocity += RUN_SPEED_PPS
+            boy.velocity = RUN_SPEED_PPS
         elif event == LEFT_DOWN:
-            boy.velocity -= RUN_SPEED_PPS
+            boy.velocity = -RUN_SPEED_PPS
         elif event == RIGHT_UP:
-            boy.velocity -= RUN_SPEED_PPS
+            boy.velocity = -RUN_SPEED_PPS
         elif event == LEFT_UP:
-            boy.velocity += RUN_SPEED_PPS
+            boy.velocity = RUN_SPEED_PPS
         boy.dir = clamp(-1, boy.velocity, 1)
 
     @staticmethod
@@ -93,6 +93,11 @@ class RunState:
         # boy.frame = (boy.frame + 1) % 8
         boy.frame = (boy.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 8
         boy.x += boy.velocity * game_framework.frame_time
+        if boy.on_the_brick:
+            boy.x += (main_state.brick.move_dir * main_state.brick.SPEED) * game_framework.frame_time
+            if not main_state.collide(boy, main_state.brick):
+                boy.on_the_brick = False
+                boy.add_event(FALL)
         boy.x = clamp(25, boy.x, 1600 - 25)
 
     @staticmethod
@@ -115,6 +120,8 @@ class SleepState:
 
     @staticmethod
     def do(boy):
+        if boy.on_the_brick:
+            boy.x += (main_state.brick.move_dir * main_state.brick.SPEED) * game_framework.frame_time
         boy.frame = (boy.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 8
 
     @staticmethod
@@ -140,7 +147,13 @@ class JumpState:
     @staticmethod
     def do(boy):
         boy.y += JUMP_SPEED * game_framework.frame_time
-        if boy.y > MAX_HEIGHT:
+
+        if main_state.collide(boy, main_state.brick):
+            boy.y = (main_state.brick.y + 20) + 38
+            boy.on_the_brick = True
+            boy.add_event(COLLIDE)
+
+        if boy.y >= MAX_HEIGHT and not boy.on_the_brick:
             boy.add_event(FALL)
 
     @staticmethod
@@ -164,6 +177,16 @@ class FallState:
     def do(boy):
         boy.y -= JUMP_SPEED * game_framework.frame_time
 
+        if main_state.collide(boy, main_state.brick):
+            boy.y = (main_state.brick.y + 20) + 38
+            boy.on_the_brick = True
+            boy.add_event(COLLIDE)
+
+        if main_state.collide(boy, main_state.grass):
+            boy.y = 90
+            boy.on_the_ground = True
+            boy.add_event(COLLIDE)
+
     @staticmethod
     def draw(boy):
         if boy.dir == 1:
@@ -176,7 +199,8 @@ next_state_table = {
     IdleState: {RIGHT_UP: RunState, LEFT_UP: RunState, RIGHT_DOWN: RunState, LEFT_DOWN: RunState,
                 SLEEP_TIMER: SleepState, SPACE: JumpState, COLLIDE: IdleState},
 
-    RunState: {RIGHT_UP: IdleState, LEFT_UP: IdleState, LEFT_DOWN: IdleState, RIGHT_DOWN: IdleState, SPACE: JumpState},
+    RunState: {RIGHT_UP: IdleState, LEFT_UP: IdleState, LEFT_DOWN: IdleState, RIGHT_DOWN: IdleState,
+               SPACE: RunState, FALL: FallState},
 
     SleepState: {LEFT_DOWN: RunState, RIGHT_DOWN: RunState, LEFT_UP: RunState, RIGHT_UP: RunState, SPACE: IdleState},
 
@@ -226,7 +250,7 @@ class Boy:
         draw_rectangle(*self.get_bb())
 
     def get_bb(self):
-        return self.x - 30, self.y - 35, self.x + 30, self.y + 40
+        return self.x - 30, self.y - 38, self.x + 30, self.y + 40
 
     def handle_event(self, event):
         if (event.type, event.key) in key_event_table:

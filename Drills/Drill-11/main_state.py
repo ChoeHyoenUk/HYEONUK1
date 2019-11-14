@@ -100,15 +100,18 @@ def update():
         if collide(grass, ball):
             ball.stop()
     '''
-    if collide(boy, brick):
-        boy.add_event(COLLIDE)
-    '''
-
+    if not boy.on_the_brick:
+        if collide(boy, brick):
+            boy.y = (brick.y + 20) + 50
+            boy.on_the_brick = True
+            boy.add_event(COLLIDE)
+    
     if not boy.on_the_ground:
         if collide(boy, grass):
             boy.y = 90
             boy.on_the_ground = True
             boy.add_event(COLLIDE)
+    '''
 
 def draw():
     clear_canvas()
