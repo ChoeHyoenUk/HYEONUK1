@@ -46,16 +46,16 @@ def enter():
     game_world.add_object(zombie, 1)
 
     global balls
-    for i in range(10):
-        which_ball = random.randint(0, 1)
-        if which_ball == 0:
-            tmep_ball = Ball()
-            balls.append(tmep_ball)
-            game_world.add_object(tmep_ball, 1)
-        else:
-            tmep_ball = BigBall()
-            balls.append(tmep_ball)
-            game_world.add_object(tmep_ball, 1)
+    for i in range(1):
+        tmep_ball = Ball()
+        balls.append(tmep_ball)
+        game_world.add_object(tmep_ball, 1)
+
+    for i in range(1):
+        tmep_ball = BigBall()
+        balls.append(tmep_ball)
+        game_world.add_object(tmep_ball, 1)
+
 
     ground = Ground()
     game_world.add_object(ground, 0)
