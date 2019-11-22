@@ -1,4 +1,5 @@
 import game_framework
+import main_state
 from pico2d import *
 
 import game_world
@@ -57,8 +58,6 @@ class WalkingState:
         elif event == DOWNKEY_UP:
             boy.y_velocity += RUN_SPEED_PPS
 
-
-
     @staticmethod
     def exit(boy, event):
         pass
@@ -70,6 +69,13 @@ class WalkingState:
         boy.y += boy.y_velocity * game_framework.frame_time
         boy.x = clamp(25, boy.x, 1280 - 25)
         boy.y = clamp(25, boy.y, 1024 - 25)
+
+        if main_state.collide(boy, main_state.zombie):
+            if len(main_state.balls) > 0:
+                game_framework.quit()
+            elif len(main_state.balls) == 0:
+                game_framework.quit()
+
 
     @staticmethod
     def draw(boy):
