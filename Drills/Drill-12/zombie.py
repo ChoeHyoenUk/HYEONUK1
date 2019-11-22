@@ -90,52 +90,54 @@ class Zombie:
         self.dir = math.atan2(self.target_y - self.y, self.target_x - self.x)
         return BehaviorTree.SUCCESS
 
-    def move_to_target(self):
+    def move_to_bigball(self):
         self.speed = RUN_SPEED_PPS
         self.calculate_current_position()
 
         distance = (self.target_x - self.x) ** 2 + (self.target_y - self.y) ** 2
 
         if distance < PIXEL_PER_METER ** 2:
-            self.hp += self.target.hp
-            main_state.balls.remove(self.target)
+            self.hp += 100
+            main_state.bigballs.remove(self.target)
             game_world.remove_object(self.target)
-            self.target = None
             return BehaviorTree.SUCCESS
         else:
             return BehaviorTree.RUNNING
 
-    def FindBigBall(self):
-        if self.target is None:
-            for ball in main_state.balls:
-                if type(ball) == BigBall:
-                    self.target = ball
-                    self.dir = math.atan2(self.target.y - self.y, self.target.x - self.x)
-                    self.target_x, self.target_y = self.target.x, self.target.y
-                    return BehaviorTree.SUCCESS
-                return BehaviorTree.FAIL
+    def move_to_ball(self):
+        self.speed = RUN_SPEED_PPS
+        self.calculate_current_position()
 
-        elif self.target is not None and type(self.target) == BigBall:
+        distance = (self.target_x - self.x) ** 2 + (self.target_y - self.y) ** 2
+
+        if distance < PIXEL_PER_METER ** 2:
+            self.hp += 50
+            main_state.balls.remove(self.target)
+            game_world.remove_object(self.target)
             return BehaviorTree.SUCCESS
-
         else:
-            return BehaviorTree.FAIL
+            return BehaviorTree.RUNNING
+
+
+    def FindBigBall(self):
+        for ball in main_state.bigballs:
+            if len(main_state.bigballs) > 0:
+                self.target = ball
+                self.dir = math.atan2(self.target.y - self.y, self.target.x - self.x)
+                self.target_x, self.target_y = self.target.x, self.target.y
+                return BehaviorTree.SUCCESS
+            else:
+                return BehaviorTree.FAIL
 
     def FindBall(self):
-        if self.target is None:
-            for ball in main_state.balls:
-                if type(ball) == Ball:
-                    self.target = ball
-                    self.dir = math.atan2(self.target.y - self.y, self.target.x - self.x)
-                    self.target_x, self.target_y = self.target.x, self.target.y
-                    return BehaviorTree.SUCCESS
+        for ball in main_state.balls:
+            if len(main_state.balls) > 0:
+                self.target = ball
+                self.dir = math.atan2(self.target.y - self.y, self.target.x - self.x)
+                self.target_x, self.target_y = self.target.x, self.target.y
+                return BehaviorTree.SUCCESS
+            else:
                 return BehaviorTree.FAIL
-
-        elif self.target is not None and type(self.target) == Ball:
-            return BehaviorTree.SUCCESS
-
-        else:
-            return BehaviorTree.FAIL
 
     def build_behavior_tree(self):
         chase_node = SequenceNode("Chase")
@@ -145,12 +147,12 @@ class Zombie:
 
         chase_big_ball_node = SequenceNode("Chase BigBall")
         find_big_ball_node = LeafNode("Find BigBall", self.FindBigBall)
-        move_to_big_ball_node = LeafNode("Move To BigBall", self.move_to_target)
+        move_to_big_ball_node = LeafNode("Move To BigBall", self.move_to_bigball)
         chase_big_ball_node.add_children(find_big_ball_node, move_to_big_ball_node)
 
         chase_ball_node = SequenceNode("Chase Ball")
         find_ball_node = LeafNode("Find Ball", self.FindBall)
-        move_to_ball_node = LeafNode("Move To Ball", self.move_to_target)
+        move_to_ball_node = LeafNode("Move To Ball", self.move_to_ball)
         chase_ball_node.add_children(find_ball_node, move_to_ball_node)
 
         chase_balls_or_player_node = SelectorNode("Chase Balls or Player")

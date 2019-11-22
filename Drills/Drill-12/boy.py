@@ -1,4 +1,5 @@
 import game_framework
+import game_world
 import main_state
 from pico2d import *
 
@@ -72,10 +73,7 @@ class WalkingState:
 
         if main_state.collide(boy, main_state.zombie):
             if len(main_state.balls) > 0:
-                game_framework.quit()
-            elif len(main_state.balls) == 0:
-                game_framework.quit()
-
+                game_world.remove_object(main_state.zombie)
 
     @staticmethod
     def draw(boy):
